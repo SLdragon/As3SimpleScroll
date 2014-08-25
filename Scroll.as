@@ -57,7 +57,6 @@
 
 			stage.addEventListener(MouseEvent.MOUSE_UP, onUp);
 
-
 		}
 		//鼠标移动或弹起时的逻辑
 		private function mouseHd(e:MouseEvent):void
@@ -144,8 +143,17 @@
 		public function moveToIndex(n:int)
 		{
 			var current_n:int=currentTopIndex();
-			trace(currentTopIndex());
-			moveDown(n-(current_n+1));
+			trace("top index:"+currentTopIndex());
+			
+			if(n-(current_n+1)>0)
+			{
+				moveDown(n-(current_n+1));
+			}
+			else
+			{
+				moveUp(current_n+1-n);
+			}
+			
 			setThumbFocus(n);
 		}
 
@@ -190,7 +198,17 @@
 			var i:int;
 			for(i=0;i<content_num;i++)
 			{
-				if(Math.abs(content.y)<150*(i+1)-5)
+				var abs_y:Number;
+				if(content.y>0)
+				{
+					abs_y=0;
+				}
+				else
+				{
+					abs_y=Math.abs(content.y)
+				}
+				
+				if(abs_y<150*(i+1)-5)
 				{
 					return i;
 				}				

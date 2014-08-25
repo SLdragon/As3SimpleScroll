@@ -82,6 +82,7 @@
 		private function mouseMoveHd(e:MouseEvent=null):void
 		{
 			var newY:Number=window.y-(bar.y-line.y)*((content.height-window.height)/(line.height-bar.height));
+			
 			if (tweenValue > 0)
 			{
 				TweenMax.to(content, tweenValue, { y:newY} );
@@ -90,6 +91,9 @@
 			{
 				content.y = newY;
 			}
+			
+			trace(newY+"===="+currentTopIndex());
+			
 		}
 		//刷新
 		public function upDate()
@@ -103,23 +107,28 @@
 			bar.y = line.height - bar.height;
 			upDate();
 		}
-
-		//向上滚动一格
-		public function moveUp()
+		
+		//向上滚动n格
+		public function moveUp(n:int=1)
 		{
-			bar.y=bar.y-150*(line.height-bar.height)/(content.height-window.height);
+			//line.height-bar.height为bar可以移动的范围
+			
+			//content.height-window.height为
+			
+			
+			bar.y=bar.y-150*(line.height-bar.height)/(content.height-window.height)*n;
 			if (bar.y < 0)
 			{
 				bar.y = 0;
 			}
 			upDate();
 		}
-		//向下滚动一格
-		public function moveDown()
+		//向下滚动n格
+		public function moveDown(n:int=1)
 		{
 			if ((content.height-window.height)!=0)
 			{
-				bar.y=bar.y+150*(line.height-bar.height)/(content.height-window.height);
+				bar.y=bar.y+150*(line.height-bar.height)/(content.height-window.height)*n;
 			}
 			else
 			{
@@ -131,8 +140,16 @@
 			}
 			upDate();
 		}
+		
+		public function moveToIndex(n:int)
+		{
+			var current_n:int=currentTopIndex();
+			trace(currentTopIndex());
+			moveDown(n-(current_n+1));
+			setThumbFocus(n);
+		}
 
-
+		//添加元素
 		public function addContent(thumb:MovieClip)
 		{
 			content.addChild(thumb);
@@ -151,11 +168,44 @@
 			}
 			thumb.spark.visible = true;
 			current_thumb = thumb;
-
+		}
+		
+		//设置当前Thumb
+		public function setThumbFocus(i:int)
+		{
+			if(current_thumb)
+			{
+				current_thumb.spark.visible = false;
+			}
+			thumb_arr[i].spark.visible = true;
+			current_thumb=thumb_arr[i];
+			current_click_index=i;
+			
+		}
+		
+		
+		//获取顶部的Thumb的index
+		public function currentTopIndex():int
+		{
+			var i:int;
+			for(i=0;i<content_num;i++)
+			{
+				if(Math.abs(content.y)<150*(i+1)-5)
+				{
+					return i;
+				}				
+			}
+			return i;
+		}
+		
+		//获取当前被点击的图标的Index
+		public function currentThumbIndex()
+		{
+			return current_click_index;
 		}
 
 		//滚轮操作;
-		function onWhellScroll(e:MouseEvent)
+		private function onWhellScroll(e:MouseEvent)
 		{
 
 			if (e.delta > 0)
@@ -183,7 +233,8 @@
 			current_thumb.spark.visible = true;
 
 			current_click_index = current_thumb.index;
-
+			
+			trace(current_click_index);		
 
 			var bounds:Rectangle = new Rectangle(5,-140,0,10000000);
 			content.setChildIndex(current_thumb, content.numChildren - 1);

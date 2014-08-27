@@ -103,17 +103,15 @@
 		//滚动到底
 		public function toBottom()
 		{
-			bar.y = line.height - bar.height;
-			upDate();
+			moveToIndex(content_num-1);
+/*			bar.y = line.height - bar.height;
+			upDate();*/
 		}
 		
 		//向上滚动n格
 		public function moveUp(n:int=1)
 		{
-			//line.height-bar.height为bar可以移动的范围
-			
-			//content.height-window.height为
-			
+			//line.height-bar.height为bar可以移动的范围			
 			
 			bar.y=bar.y-150*(line.height-bar.height)/(content.height-window.height)*n;
 			if (bar.y < 0)

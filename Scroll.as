@@ -15,6 +15,8 @@
 	import flash.utils.Timer;
 	public class Scroll extends Sprite
 	{
+		private const MC_HEIGHT:Number=150;
+		
 		private var window:Sprite;//窗口
 		private var line:Sprite;//滑动槽
 		private var bar:Sprite;//滑动条按钮
@@ -113,7 +115,7 @@
 		{
 			//line.height-bar.height为bar可以移动的范围			
 			
-			bar.y=bar.y-150*(line.height-bar.height)/(content.height-window.height)*n;
+			bar.y=bar.y-MC_HEIGHT*(line.height-bar.height)/(content.height-window.height)*n;
 			if (bar.y < 0)
 			{
 				bar.y = 0;
@@ -125,7 +127,7 @@
 		{
 			if ((content.height-window.height)!=0)
 			{
-				bar.y=bar.y+150*(line.height-bar.height)/(content.height-window.height)*n;
+				bar.y=bar.y+MC_HEIGHT*(line.height-bar.height)/(content.height-window.height)*n;
 			}
 			else
 			{
@@ -159,7 +161,7 @@
 		public function addContent(thumb:MovieClip)
 		{
 			content.addChild(thumb);
-			thumb.y = content_num * 150 + 5;
+			thumb.y = content_num * MC_HEIGHT + 5;
 			thumb.x = 5;
 
 			thumb.addEventListener(MouseEvent.MOUSE_DOWN, onDown);
@@ -174,6 +176,13 @@
 			}
 			thumb.spark.visible = true;
 			current_thumb = thumb;
+		}
+		
+		public function removeContent(thumb:MovieClip)
+		{
+			content.removeChild(thumb);
+			thumb=null;
+			content_num--;
 		}
 		
 		//设置当前Thumb
@@ -206,7 +215,7 @@
 					abs_y=Math.abs(content.y)
 				}
 				
-				if(abs_y<150*(i+1)-5)
+				if(abs_y<MC_HEIGHT*(i+1)-5)
 				{
 					return i;
 				}				
@@ -215,10 +224,47 @@
 		}
 		
 		//获取当前被点击的图标的Index
-		public function currentThumbIndex()
+		public function currentThumbIndex():int
 		{
 			return current_click_index;
 		}
+		
+		//获取当前被点击的图标的Thumb
+		public function currentThumb():MovieClip
+		{
+			return current_thumb;
+		}
+		
+		public function deleteThumb(thumb:MovieClip)
+		{
+			var index:int=thumb2Index(thumb);
+			removeContent(thumb);			
+			thumb_arr.splice(index,1);
+			trace("remove:"+index);
+			for(var i:int=index;i<thumb_arr.length;i++)
+			{
+				TweenMax.to(thumb_arr[i], 0.5, {y: MovieClip(thumb_arr[i]).y - MC_HEIGHT});
+			}
+			
+			
+		}
+		
+		public function thumb2Index(thumb:MovieClip):int
+		{
+			
+			var index:int;
+			for(var i:int=0;i<thumb_arr.length;i++)
+			{
+				if(thumb===thumb_arr[i])
+				{
+					index=i;
+					break;
+				}
+			}
+			return index;
+			
+		}
+		
 
 		//滚轮操作;
 		private function onWhellScroll(e:MouseEvent)
@@ -244,11 +290,11 @@
 			{
 				current_thumb.spark.visible = false;
 			}
-			current_thumb = BmpThumb(e.currentTarget);
+			current_thumb = MovieClip(e.currentTarget);
 
 			current_thumb.spark.visible = true;
 
-			current_click_index = current_thumb.index;
+			current_click_index = thumb2Index(current_thumb);
 			
 			trace(current_click_index);		
 
@@ -265,7 +311,7 @@
 		//拖动条进行移动;
 		function onBarFrame(e:Event)
 		{
-			bar.y = getBarY((thumb_arr.length - 1) * 150 + 145);
+			bar.y = getBarY((thumb_arr.length - 1) * MC_HEIGHT + 145);
 		}
 
 		//拖动时，结束所有的动画
@@ -283,10 +329,10 @@
 			var cur_y:Number = content.localToGlobal(pos).y;
 			if (cur_y < 0)
 			{
-				if (current_thumb.y - 150 > 0)
+				if (current_thumb.y - MC_HEIGHT > 0)
 				{
-					TweenMax.to(current_thumb, 0.5, {y: current_thumb.y - 150});
-					TweenMax.to(content, 0.5, {y: content.y + 150});
+					TweenMax.to(current_thumb, 0.5, {y: current_thumb.y - MC_HEIGHT});
+					TweenMax.to(content, 0.5, {y: content.y + MC_HEIGHT});
 				}
 				else
 				{
@@ -299,8 +345,8 @@
 			{
 				if (coor2index(current_thumb.y) < thumb_arr.length - 1)
 				{
-					TweenMax.to(current_thumb, 0.5, {y: current_thumb.y + 150});
-					TweenMax.to(content, 0.5, {y: content.y - 150});
+					TweenMax.to(current_thumb, 0.5, {y: current_thumb.y + MC_HEIGHT});
+					TweenMax.to(content, 0.5, {y: content.y - MC_HEIGHT});
 				}
 			}
 		}
@@ -309,7 +355,7 @@
 		//将坐标转换为索引
 		function coor2index(y:Number):int
 		{
-			var index:int = Math.floor((y - 5) / 150);
+			var index:int = Math.floor((y - 5) / MC_HEIGHT);
 			if (index < 0)
 			{
 				index = -1;
@@ -324,14 +370,14 @@
 		//将索引转换为坐标
 		function index2coor(index:int):Number
 		{
-			return index * 150 + 5;
+			return index * MC_HEIGHT + 5;
 		}
 
 
 		//获取停止拖动时，缩略图应该回到的位置
 		function setStopDragPosition(cur_y:Number):Number
 		{
-			var ori_index = current_thumb.index;
+			var ori_index = thumb2Index(current_thumb);
 			var cur_index:int;
 			if (index2coor(ori_index - 1) < cur_y < index2coor(ori_index + 1))
 			{
@@ -354,7 +400,7 @@
 
 			if (current_thumb)
 			{
-				var ori_index = current_thumb.index;
+				var ori_index = thumb2Index(current_thumb);
 
 				current_thumb.alpha = 1;
 				current_thumb.stopDrag();
@@ -373,7 +419,7 @@
 		function moveThumbAmimation(ori_index:int, cur_index:int)
 		{
 			var i:int;
-			var tmp:BmpThumb;
+			var tmp:MovieClip;
 			//var tmp_url:String;
 
 			if (ori_index < cur_index)
@@ -382,13 +428,13 @@
 				//tmp_url = url_arr[ori_index];
 				for (i = ori_index + 1; i <= cur_index; i++)
 				{
-					TweenMax.to(thumb_arr[i], 0.5, {y: BmpThumb(thumb_arr[i]).y - 150});
+					TweenMax.to(thumb_arr[i], 0.5, {y: MovieClip(thumb_arr[i]).y - MC_HEIGHT});
 					thumb_arr[i - 1] = thumb_arr[i];
-					thumb_arr[i - 1].index = i - 1;
+					//thumb_arr[i - 1].index = i - 1;
 					//url_arr[i - 1] = thumb_arr[i];
 				}
 				thumb_arr[cur_index] = tmp;
-				thumb_arr[cur_index].index = cur_index;
+				//thumb_arr[cur_index].index = cur_index;
 				//url_arr[cur_index] = tmp_url;
 			}
 			if (ori_index > cur_index)
@@ -397,17 +443,16 @@
 				//tmp_url = url_arr[ori_index];
 				for (i = ori_index - 1; i >= cur_index; i--)
 				{
-					TweenMax.to(thumb_arr[i], 0.5, {y: thumb_arr[i].y + 150});
+					TweenMax.to(thumb_arr[i], 0.5, {y: thumb_arr[i].y + MC_HEIGHT});
 					thumb_arr[i + 1] = thumb_arr[i];
-					thumb_arr[i + 1].index = i + 1;
+					//thumb_arr[i + 1].index = i + 1;
 					//url_arr[i + 1] = thumb_arr[i];
 				}
 				thumb_arr[cur_index] = tmp;
-				thumb_arr[cur_index].index = cur_index;
+				//thumb_arr[cur_index].index = cur_index;
 				//url_arr[cur_index] = thumb_arr[cur_index];
 			}
 		}
-
 
 	}
 }

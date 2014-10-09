@@ -421,6 +421,11 @@
 			var i:int;
 			var tmp:MovieClip;
 			//var tmp_url:String;
+			if(thumb_arr.length==0)
+			{
+				trace("不允许在没有元素时滚动");
+				return;
+			}
 
 			if (ori_index < cur_index)
 			{

@@ -176,13 +176,30 @@
 			}
 			thumb.spark.visible = true;
 			current_thumb = thumb;
+			
+			moveToIndex(content_num-1);
 		}
 		
-		public function removeContent(thumb:MovieClip)
+		private function removeContent(thumb:MovieClip)
 		{
 			content.removeChild(thumb);
 			thumb=null;
 			content_num--;
+			current_thumb=null;
+		}
+		
+		public function deleteThumb(thumb:MovieClip)
+		{
+			var index:int=thumb2Index(thumb);
+			removeContent(thumb);			
+			thumb_arr.splice(index,1);
+			trace("remove:"+index);
+			for(var i:int=index;i<thumb_arr.length;i++)
+			{
+				TweenMax.to(thumb_arr[i], 0.5, {y: MovieClip(thumb_arr[i]).y - MC_HEIGHT});
+			}
+			
+			
 		}
 		
 		//设置当前Thumb
@@ -197,6 +214,8 @@
 			current_click_index=i;
 			
 		}
+		
+		
 		
 		
 		//获取顶部的Thumb的index
@@ -235,19 +254,7 @@
 			return current_thumb;
 		}
 		
-		public function deleteThumb(thumb:MovieClip)
-		{
-			var index:int=thumb2Index(thumb);
-			removeContent(thumb);			
-			thumb_arr.splice(index,1);
-			trace("remove:"+index);
-			for(var i:int=index;i<thumb_arr.length;i++)
-			{
-				TweenMax.to(thumb_arr[i], 0.5, {y: MovieClip(thumb_arr[i]).y - MC_HEIGHT});
-			}
-			
-			
-		}
+
 		
 		public function thumb2Index(thumb:MovieClip):int
 		{
